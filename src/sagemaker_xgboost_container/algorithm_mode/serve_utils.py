@@ -17,8 +17,8 @@ import pickle as pkl
 
 import numpy as np
 import xgboost as xgb
-from sagemaker_containers._recordio import _write_recordio
-from sagemaker_containers.record_pb2 import Record
+from sagemaker_training.recordio import _write_recordio
+from sagemaker_training.record_pb2 import Record
 from scipy import stats
 from scipy.sparse import csr_matrix
 

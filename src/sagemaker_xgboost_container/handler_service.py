@@ -14,12 +14,12 @@ from __future__ import absolute_import
 
 import textwrap
 
-from sagemaker_containers.beta.framework import encoders
+from sagemaker_inference import encoder
 from sagemaker_inference import content_types, default_inference_handler
 from sagemaker_inference.default_handler_service import DefaultHandlerService
 from sagemaker_inference.transformer import Transformer
 
-from sagemaker_xgboost_container import encoder as xgb_encoders
+from sagemaker_xgboost_container import encoder as xgb_encoder
 
 
 class HandlerService(DefaultHandlerService):
@@ -61,7 +61,7 @@ class HandlerService(DefaultHandlerService):
             Returns:
                 (obj): data ready for prediction. For XGBoost, this defaults to DMatrix.
             """
-            return xgb_encoders.decode(input_data, content_type)
+            return xgb_encoder.decode(input_data, content_type)
 
         def default_predict_fn(self, input_data, model):
             """A default predict_fn for XGBooost Framework. Calls a model on data deserialized in input_fn.
@@ -81,7 +81,7 @@ class HandlerService(DefaultHandlerService):
             Returns:
                 encoded response for MMS to return to client
             """
-            encoded_prediction = encoders.encode(prediction, accept)
+            encoded_prediction = encoder.encode(prediction, accept)
             if accept == content_types.CSV:
                 encoded_prediction = encoded_prediction.encode("utf-8")
 

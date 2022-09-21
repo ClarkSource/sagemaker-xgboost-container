@@ -14,14 +14,13 @@ from __future__ import absolute_import
 
 import logging
 import os
+from importlib.util import find_spec
 
-from sagemaker_containers.beta.framework import (
-    encoders,
-    env,
-    modules,
-    server,
+from sagemaker_inference import (
+    encoder,
+    environment,
+    model_server,
     transformer,
-    worker,
 )
 
 from sagemaker_algorithm_toolkit import exceptions as exc
@@ -29,6 +28,7 @@ from sagemaker_xgboost_container import encoder as xgb_encoders
 from sagemaker_xgboost_container.algorithm_mode import serve
 from sagemaker_xgboost_container.constants import sm_env_constants
 from sagemaker_xgboost_container.serving_mms import start_mxnet_model_server
+from sagemaker_xgboost_container import worker, handler_service
 
 logging.basicConfig(format="%(asctime)s %(levelname)s - %(name)s - %(message)s", level=logging.INFO)
 logging.getLogger("boto3").setLevel(logging.INFO)
@@ -110,28 +110,7 @@ def default_output_fn(prediction, accept):
                 response: the serialized data to return
                 accept: the content-type that the data was transformed to.
     """
-    return worker.Response(encoders.encode(prediction, accept), mimetype=accept)
-
-
-def _user_module_transformer(user_module):
-    model_fn = getattr(user_module, "model_fn", default_model_fn)
-    input_fn = getattr(user_module, "input_fn", None)
-    predict_fn = getattr(user_module, "predict_fn", None)
-    output_fn = getattr(user_module, "output_fn", None)
-    transform_fn = getattr(user_module, "transform_fn", None)
-
-    if transform_fn and (input_fn or predict_fn or output_fn):
-        raise exc.UserError("Cannot use transform_fn implementation with input_fn, predict_fn, and/or output_fn")
-
-    if transform_fn is not None:
-        return transformer.Transformer(model_fn=model_fn, transform_fn=transform_fn)
-    else:
-        return transformer.Transformer(
-            model_fn=model_fn,
-            input_fn=input_fn or default_input_fn,
-            predict_fn=predict_fn or default_predict_fn,
-            output_fn=output_fn or default_output_fn,
-        )
+    return worker.Response(encoder.encode(prediction, accept), mimetype=accept)
 
 
 app = None
@@ -140,15 +119,16 @@ app = None
 def main(environ, start_response):
     global app
     if app is None:
-        serving_env = env.ServingEnv()
-        if serving_env.module_name is None:
+        serving_env = environment.Environment()
+        user_module_name = serving_env.module_name
+
+        if find_spec(user_module_name) is None:
             app = serve.ScoringService.csdk_start()
         else:
-            user_module = modules.import_module(serving_env.module_dir, serving_env.module_name)
-            user_module_transformer = _user_module_transformer(user_module)
-            user_module_transformer.initialize()
+            tr = transformer.Transformer()
+            tr.validate_and_initialize()
             app = worker.Worker(
-                transform_fn=user_module_transformer.transform,
+                transform_fn=tr.transform,
                 module_name=serving_env.module_name,
             )
 
@@ -166,4 +146,4 @@ def serving_entrypoint():
     if is_multi_model():
         start_mxnet_model_server()
     else:
-        server.start(env.ServingEnv().framework_module)
+        model_server.start_model_server(handler_service=handler_service.HandlerService())

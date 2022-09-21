@@ -17,15 +17,16 @@ import multiprocessing
 import os
 import subprocess
 from math import ceil
+from importlib.util import find_spec
+import importlib
 
 from retrying import retry
-from sagemaker_containers.beta.framework import env, modules
+from sagemaker_inference import environment, model_server
 
 from sagemaker_xgboost_container import handler_service as user_module_handler_service
 from sagemaker_xgboost_container.algorithm_mode import (
     handler_service as algo_handler_service,
 )
-from sagemaker_xgboost_container.mms_patch import model_server
 
 ALGO_HANDLER_SERVICE = algo_handler_service.__name__
 USER_HANDLER_SERVICE = user_module_handler_service.__name__
@@ -52,9 +53,7 @@ def _start_model_server(is_multi_model, handler):
     # retry starting mms until it's ready
     logging.info("Trying to set up model server handler: {}".format(handler))
     _set_mms_configs(is_multi_model, handler)
-    model_server.start_model_server(
-        handler_service=handler, is_multi_model=is_multi_model, config_file=get_mms_config_file_path()
-    )
+    model_server.start_model_server(handler_service=handler)
 
 
 def _is_multi_model_endpoint():
@@ -131,14 +130,15 @@ def _set_mms_configs(is_multi_model, handler):
 
 
 def start_mxnet_model_server():
-    serving_env = env.ServingEnv()
+    serving_env = environment.Environment()
     is_multi_model = True
+    user_module_name = serving_env.module_name
 
-    if serving_env.module_name is None:
+    if find_spec(user_module_name) is None:
         logging.info("Starting MXNet server in algorithm mode.")
         _start_model_server(is_multi_model, ALGO_HANDLER_SERVICE)
     else:
         logging.info("Staring MXNet Model Server with user module.")
         # Install user module from s3 to import
-        modules.import_module(serving_env.module_dir, serving_env.module_name)
+        importlib.import_module(user_module_name)
         _start_model_server(is_multi_model, USER_HANDLER_SERVICE)
