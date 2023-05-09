@@ -91,3 +91,9 @@ BINARY_LOGRAW = "binary:logitraw"
 BINARY_HINGE = "binary:hinge"
 MULTI_SOFTMAX = "multi:softmax"
 MULTI_SOFTPROB = "multi:softprob"
+
+MODEL_NAME = "xgboost-model"
+GPU_TREE_METHOD = "gpu_hist"
+
+FULLY_REPLICATED = "FullyReplicated"
+PIPE_MODE = "Pipe"

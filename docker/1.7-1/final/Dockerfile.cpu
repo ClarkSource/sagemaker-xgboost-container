@@ -1,7 +1,7 @@
-ARG SAGEMAKER_XGBOOST_VERSION=1.5-1
-ARG PYTHON_VERSION=3.8
+ARG SAGEMAKER_XGBOOST_VERSION=1.7-1
+ARG PYTHON_VERSION=3.10.6
 
-FROM xgboost-container-base:${SAGEMAKER_XGBOOST_VERSION}-cpu-py3-arm64
+FROM xgboost-container-base:${SAGEMAKER_XGBOOST_VERSION}-cpu-py3
 
 ARG SAGEMAKER_XGBOOST_VERSION
 
@@ -10,6 +10,10 @@ ARG SAGEMAKER_XGBOOST_VERSION
 ########################
 COPY requirements.txt /requirements.txt
 RUN python3 -m pip install -r /requirements.txt && rm /requirements.txt
+
+# Install smdebug from source
+RUN python3 -m pip install git+https://github.com/awslabs/sagemaker-debugger.git@1.0.29
+
 
 ###########################
 # Copy wheel to container #
@@ -50,6 +54,10 @@ RUN chmod +x /tmp/plugins/endpoints-1.0.jar
 RUN mkdir -p /opt/ml/models
 RUN chmod +rwx /opt/ml/models
 
+# Copy Dask configs
+RUN mkdir /etc/dask
+COPY docker/configs/dask_configs.yaml /etc/dask/
+
 # Required label for multi-model loading
 LABEL com.amazonaws.sagemaker.capabilities.multi-models=true
 
@@ -61,6 +69,9 @@ ENV SM_INPUT /opt/ml/input
 ENV SM_INPUT_TRAINING_CONFIG_FILE $SM_INPUT/config/hyperparameters.json
 ENV SM_INPUT_DATA_CONFIG_FILE $SM_INPUT/config/inputdataconfig.json
 ENV SM_CHECKPOINT_CONFIG_FILE $SM_INPUT/config/checkpointconfig.json
+# See: https://github.com/dmlc/xgboost/issues/7982#issuecomment-1379390906 https://github.com/dmlc/xgboost/pull/8257
+ENV NCCL_SOCKET_IFNAME eth 
+                            
 
 # Set SageMaker serving environment variables
 ENV SM_MODEL_DIR /opt/ml/model
