@@ -78,7 +78,7 @@ RUN rm /etc/apt/sources.list.d/cuda.list && \
 # Install conda
 RUN cd /tmp && \
     curl -L --output /tmp/Miniconda3.sh https://repo.anaconda.com/miniconda/Miniconda3-py${CONDA_PY_VERSION}_${MINICONDA_VERSION}-Linux-x86_64.sh && \
-    echo $(sha256sum /tmp/Miniconda3.sh) &&
+    echo $(sha256sum /tmp/Miniconda3.sh) && \
     echo "${CONDA_CHECKSUM} /tmp/Miniconda3.sh" | sha256sum -c - && \
     bash /tmp/Miniconda3.sh -bfp /miniconda3 && \
     rm /tmp/Miniconda3.sh
