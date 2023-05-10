@@ -6,7 +6,7 @@ FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu${UBUNTU_VERSION}@sha256:${IMAGE_DIG
 
 ARG MINICONDA_VERSION=23.3.1
 ARG CONDA_PY_VERSION=310
-ARG CONDA_CHECKSUM="b9b3034d8fec23e4eec6130e40bd1979ed46ec3dfaa9ff481d8283ee39589aa7"
+ARG CONDA_CHECKSUM="aef279d6baea7f67940f16aad17ebe5f6aac97487c7c03466ff01f4819e5a651"
 ARG CONDA_PKG_VERSION=23.3.1
 ARG PYTHON_VERSION=3.10.6
 ARG PYARROW_VERSION=12.0
@@ -78,6 +78,7 @@ RUN rm /etc/apt/sources.list.d/cuda.list && \
 # Install conda
 RUN cd /tmp && \
     curl -L --output /tmp/Miniconda3.sh https://repo.anaconda.com/miniconda/Miniconda3-py${CONDA_PY_VERSION}_${MINICONDA_VERSION}-Linux-x86_64.sh && \
+    echo $(sha256sum /tmp/Miniconda3.sh) &&
     echo "${CONDA_CHECKSUM} /tmp/Miniconda3.sh" | sha256sum -c - && \
     bash /tmp/Miniconda3.sh -bfp /miniconda3 && \
     rm /tmp/Miniconda3.sh
