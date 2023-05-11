@@ -39,8 +39,8 @@ RUN rm /etc/apt/sources.list.d/cuda.list && \
         nginx \
         openjdk-8-jdk-headless \
         unzip \
-        wget \
-        && \
+        wget
+        # && \
     # MLIO build dependencies
     # Official Ubuntu APT repositories do not contain an up-to-date version of CMake required to build MLIO.
     # Kitware contains the latest version of CMake.
