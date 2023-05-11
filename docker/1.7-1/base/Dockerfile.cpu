@@ -44,36 +44,36 @@ RUN rm /etc/apt/sources.list.d/cuda.list && \
     # MLIO build dependencies
     # Official Ubuntu APT repositories do not contain an up-to-date version of CMake required to build MLIO.
     # Kitware contains the latest version of CMake.
-    apt-get -y install --no-install-recommends \
-        apt-transport-https \
-        ca-certificates \
-        gnupg \
-        software-properties-common \
-        && \
-    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
-        gpg --dearmor - | \
-        tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null && \
-    echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null && \
-    apt-get update && \
-    rm /usr/share/keyrings/kitware-archive-keyring.gpg && \
-    apt-get install -y --no-install-recommends \
-        autoconf \
-        automake \
-        build-essential \
-        cmake=3.18.4-0kitware1 \
-        cmake-data=3.18.4-0kitware1 \
-        doxygen \
-        kitware-archive-keyring \
-        libcurl4-openssl-dev \
-        libssl-dev \
-        libtool \
-        ninja-build \
-        python3-dev \
-        python3-distutils \
-        python3-pip \
-        zlib1g-dev \
-        && \
-    rm -rf /var/lib/apt/lists/*
+    # apt-get -y install --no-install-recommends \
+    #     apt-transport-https \
+    #     ca-certificates \
+    #     gnupg \
+    #     software-properties-common \
+    #     && \
+    # wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
+    #     gpg --dearmor - | \
+    #     tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null && \
+    # echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null && \
+    # apt-get update && \
+    # rm /usr/share/keyrings/kitware-archive-keyring.gpg && \
+    # apt-get install -y --no-install-recommends \
+    #     autoconf \
+    #     automake \
+    #     build-essential \
+    #     cmake=3.18.4-0kitware1 \
+    #     cmake-data=3.18.4-0kitware1 \
+    #     doxygen \
+    #     kitware-archive-keyring \
+    #     libcurl4-openssl-dev \
+    #     libssl-dev \
+    #     libtool \
+    #     ninja-build \
+    #     python3-dev \
+    #     python3-distutils \
+    #     python3-pip \
+    #     zlib1g-dev \
+    #     && \
+    # rm -rf /var/lib/apt/lists/*
 
 # Install conda
 RUN cd /tmp && \
@@ -91,6 +91,7 @@ RUN echo "conda ${CONDA_PKG_VERSION}" >> /miniconda3/conda-meta/pinned && \
     # Conda configuration see https://conda.io/projects/conda/en/latest/configuration.html
     conda config --system --set auto_update_conda false && \
     conda config --system --set show_channel_urls true && \
+    conda config --system --set channel_priority false && \
     echo "python ${PYTHON_VERSION}.*" >> /miniconda3/conda-meta/pinned && \
     conda install -c conda-forge python=${PYTHON_VERSION} && \
     conda install conda=${CONDA_PKG_VERSION} python=${PYTHON_VERSION} && \
