@@ -37,7 +37,6 @@ kiwisolver==1.4.4
 llvmlite==0.40.0
 locket==1.0.0
 MarkupSafe==2.1.2
-matplotlib==3.4.1
 model-archiver==1.0.3
 msgpack==1.0.5
 multi-model-server==1.1.8
