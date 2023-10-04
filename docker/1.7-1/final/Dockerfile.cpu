@@ -8,7 +8,8 @@ ARG SAGEMAKER_XGBOOST_VERSION
 ########################
 # Install dependencies #
 ########################
-COPY requirements.txt /requirements.txt
+COPY requirements.txt /requirements.
+RUN python3 -m pip install -U pip
 RUN python3 -m pip install -r /requirements.txt && rm /requirements.txt
 
 # Install smdebug from source
